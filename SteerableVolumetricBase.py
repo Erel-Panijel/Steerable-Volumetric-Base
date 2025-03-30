@@ -383,8 +383,8 @@ def delta_c(c, sigma):
     """
     Calculation of the \delta_c parameter in the error bound.
     :param c: the band-limit parameter.
-    :param sigma: an array with shape [s,] of different \sigma values.
-    :return: an array with shape [s,] of the \delta_c parameter for all \sigma values.
+    :param sigma: the variance \sigma.
+    :return: the \delta_c parameter for the \sigma value.
     """
     return np.sqrt((2 * np.pi) ** -3 *((np.pi / sigma) ** 1.5 * sp.special.erfc(c * np.sqrt(sigma))
                                        + 2 * c * np.pi / sigma * np.exp(-sigma * c ** 2)))
@@ -394,8 +394,8 @@ def eps(mu, sigma):
     """
     Calculation of the \epsilon parameter in the error bound.
     :param mu: an array with shape [3,] of the Gaussian means.
-    :param sigma: an array with shape [s,] of different \sigma values.
-    :return: an array with shape [s,] of the \epsilon parameter for all \sigma values.
+    :param sigma: the variance \sigma.
+    :return: the \epsilon parameter for the \sigma value.
     """
     norm = np.linalg.norm(mu)
     return np.sqrt((np.pi * sigma) ** 1.5 * sp.special.erfc((1 - norm)/np.sqrt(sigma))
@@ -408,10 +408,10 @@ def error_bound(T, c, l, delta, epsilon, fvals):
     :param T: the truncation parameter T.
     :param c: the band-limit parameter.
     :param l: the sampling frequency L.
-    :param delta: an array with shape [s,] of different values of \delta_c.
-    :param epsilon: an array with shape [s,] of different values of \epsilon.
+    :param delta: the \delta_c parameter
+    :param epsilon: the \epsilon parameter
     :param fvals: an array with shape [x,] of the sampled function in points outside the unit ball.
-    :return: an array with shape [s,] of the error bound for all \sigma values.
+    :return: the error bound.
     """
     return (epsilon + delta) * T + np.sqrt(4/3 * np.pi * (c / l) ** 3 * np.sum(np.abs(fvals) ** 2)) + 4 * delta
 
@@ -514,9 +514,10 @@ def sanity_check_2(l):
 
 def sanity_check_3(l):
     """
-
-    :param l:
-    :return:
+    Checks if the eigenvalues calculated in python are the same as MATLAB's.
+    :param l: the sampling frequency L.
+    :return: nothing.
+             prints the relative error of the eigenvalues \gamma_{20,n}.
     """
     matlab = np.array([3.162277660168357e-02, -3.162277660168352e-02, 3.162277660168353e-02, -3.162277660168313e-02,
                        3.162277660158250e-02, -3.162277658487909e-02, 3.162277465151673e-02, -3.162261797571675e-02,
@@ -529,6 +530,12 @@ def sanity_check_3(l):
 
 
 def sanity_check_4():
+    """
+    Checks if the calculated \Phi_{N,n} and \beta_{N,n} are eigenfunctions and eigenvalues.
+    :return: nothing.
+             prints the norm of error between the left hand side and the right hand side of the integral equation for
+             \Phi_{20,7} and \beta_{20,7}.
+    """
     x_values = 0.00005 + np.linspace(0, 0.9999, 10000).reshape(-1, 1)
     r_values = 0.005 + np.linspace(0, 0.99, 100)
     coeffs, eigs = radial_coefficients(np.pi * 20, 20, 1e-16, 300)
@@ -546,7 +553,7 @@ def sanity_check_5(max_N):
     Checks if the evaluated polynomials are normalized.
     :param max_N: the maximal prolate order N.
     :return: Nothing.
-             prints an array with shape [N, m] of the squared norm of \hat{P}^m_N.
+             prints an array with shape [2max_N+1,] of the squared norm of \hat{P}^m_{max_N}.
     """
     xx = np.linspace(-0.9995, 0.9995, 2000)
     yy = legendre_poly(max_N, xx)[:, 20]
@@ -554,6 +561,12 @@ def sanity_check_5(max_N):
 
 
 def sanity_check_6(order):
+    """
+    Checks if the calculated spherical harmonics of order N are orthonormal.
+    :param order: the N parameter of the spherical harmonics.
+    :return: Nothing.
+             prints an array of shape [N+1,N+1]. it is the Gram matrix of S_{N,m} where 0<=m<=N.
+    """
     polar = []
     for theta in np.linspace(0, np.pi, 1000):
         for phi in np.linspace(-np.pi, np.pi, 1000):
@@ -637,7 +650,7 @@ plt.grid()
 plt.show()
 
 plt.figure(3)
-plt.plot([16, 20, 24, 28, 32], bounds)
+plt.plot([16, 20, 24, 28, 32], bound)
 plt.legend(['Bound'])
 plt.xlabel('L')
 plt.grid()
